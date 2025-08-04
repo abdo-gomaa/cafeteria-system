@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Place Order</title>
+    <style>
+        .order-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+    <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
+    h1 { color: #333; }
+    form { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .order-item { border: 1px dashed #aaa; padding: 10px; margin-bottom: 10px; border-radius: 4px; background: #fafafa; }
+    button { margin-top: 10px; padding: 8px 16px; border: none; background: #28a745; color: white; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #218838; }
+    .add-button { background: #007bff; margin-bottom: 10px; }
+    .add-button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+    <h1>Place an Order</h1>
+
+    <form method="post" id="order-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {{ formset.management_form }}
+
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="order-item">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" onclick="addForm()">Add Another Item</button>
+        <br><br>
+        <button type="submit">Submit Order</button>
+    </form>
+
+    <script>
+        let formIdx = parseInt("{{ formset.total_form_count }}");
+
+        function addForm() {
+            let container = document.getElementById('formset-container');
+            let emptyFormHtml = `{{ formset.empty_form.as_p|escapejs }}`;
+            let newFormHtml = emptyFormHtml.replace(/__prefix__/g, formIdx);
+            let newDiv = document.createElement('div');
+            newDiv.classList.add('order-item');
+            newDiv.innerHTML = newFormHtml;
+            container.appendChild(newDiv);
+            formIdx++;
+
+            // Update TOTAL_FORMS hidden input
+            document.getElementById('id_' + '{{ formset.prefix }}-TOTAL_FORMS').value = formIdx;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cafeteria Menu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3d4d4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: rgb(138, 31, 31);
+      font-style: italic;
+    }
+
+    .menu-grid {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .category-column {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      width: 195px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .category-column h2 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    .menu-item {
+      background: #f9f9f9;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+
+    .menu-item img {
+      max-width: 100%;
+      border-radius: 20px;
+      margin-bottom: 5px;
+    }
+    .menu-item img {
+      max-width: 100%;
+      border-radius: 6px;
+     margin-bottom: 5px;
+     transition: transform 0.3s ease;  
+     }
+
+   .menu-item img:hover {
+     transform: scale(0.90);  
+    }
+
+    .button {
+      display: block;
+      width: fit-content;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cafeteria Menu</h1>
+
+  <div class="menu-grid">
+    {% for category, items in menu_by_category.items %}
+      <div class="category-column">
+        <h2>{{ category.name }}</h2>
+        {% for item in items %}
+          <div class="menu-item">
+            {% if item.image %}
+              <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% endif %}
+            <strong>{{ item.name }}</strong> - {{ item.price }} EGP<br>
+            <small>{{ item.description }}</small>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <a href="{% url 'place_order' %}" class="button">Place an Order</a>
+
+</body>
+</html>
