@@ -1,105 +1,302 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Cafeteria Menu</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3d4d4;
-      margin: 0;
-      padding: 20px;
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+<div class="info-button-container">
+    <button class="info-button">About US</button>
+    <div class="info-card">
+        <h4>💠Cafeteria Info</h4>
+        <p><strong>Phone:</strong> 01061292646</p>
+        <p><strong>Phone:</strong> 01005687448</p>
+        <p><strong>Address:</strong> شارع عبد السلام عارف أمام مطعم مكدونالدز</p>
+        <p><strong>Hours:</strong> 10 AM – 12 PM (Sat–Thu)</p>
+    </div>
+</div>
+
+<h1 style="text-align: center; color: rgb(126, 29, 29); margin-bottom: 40px;">Cafeteria Menu</h1>
+
+<div class="menu-grid-wrapper">
+    <div class="menu-grid">
+        {% for category, items in menu_by_category.items %}
+        <div class="menu-column">
+            <h2>{{ category.name }}</h2>
+            {% for item in items %}
+            <div class="menu-item">
+                <h3>{{ item.name }}</h3>
+                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                <p class="price">{{ item.price }} EGP</p>
+                <button onclick="toggleDescription('{{ item.id }}')">Details</button>
+                <p id="desc-{{ item.id }}" class="description" style="display: none;">
+                    {{ item.description }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="{% url 'place_order' %}">
+        <button class="bt1">
+            Place Your Order
+        </button>
+    </a>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <form id="orderForm" onsubmit="return goToOrder();">
+        <input type="number" id="orderIdInput" placeholder="Enter your Order ID to View Order" min="1" required
+            style="padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc;">
+        <button class="bt" type="submit">
+            View My Order
+        </button>
+    </form>
+</div>
+
+{% if last_order %}
+<div style="text-align: center; margin-top: 30px;">
+    <form id="addToOrderForm" method="get" onsubmit="return handleAddToOrder();">
+        <input type="number" id="addOrderId" placeholder="Enter Order ID to Add" min="1" required
+            style="padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc;">
+        <button class="bt" type="submit">
+            Add to Order
+        </button>
+    </form>
+    <p id="tooLateMsg" style="color: red; margin-top: 10px; display: none;">YOU CAN'T ADD AFTER 20 MINUTES</p>
+</div><br><br>
+
+    {% endif %}
+</div>
+
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-button-container {
+        position: absolute;
+        top: 0;
+        left: 20px;
+        z-index: 100;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: rgb(138, 31, 31);
-      font-style: italic;
+    .info-button {
+        background-color: #3498db;
+        color: white;
+        border-radius: 20px;
+        width: 100px;
+        height: 55px;
+        font-size: 18px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: background-color 0.3s ease;
+    }
+
+    .info-button:hover {
+        background-color: #2980b9;
+        opacity: 40%;
+    }
+
+    .info-card {
+        display: none;
+        position: absolute;
+        top: 80px;
+        left: 0;
+        background-color: rgba(255,255,255,0.95);
+        border-radius: 10px;
+        padding: 15px;
+        width: 300px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        opacity: 80%;
+    }
+
+    .info-button-container:hover .info-card {
+        display: block;
+    }
+
+    h2 {
+        color: #165e8e;
+    }
+
+    h3 {
+        color: rgb(0, 0, 0);
+    }
+
+    .menu-grid-wrapper {
+        padding: 0 30px;
+        margin-bottom: 40px;
     }
 
     .menu-grid {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 40px; 
     }
 
-    .category-column {
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      width: 195px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    .menu-column {
+        padding: 15px;
+        border-radius: 12px;
+        backdrop-filter: blur(4px);
+        background-color: rgba(255, 255, 255, 0.08); 
+        box-shadow: 0 0 10px rgba(242, 28, 28, 0.1);
+        color: rgb(255, 255, 255);
     }
 
-    .category-column h2 {
-      text-align: center;
-      color: #007bff;
+    .menu-column h2 {
+        text-align: center;
+        font-size: 20px;
+        margin-bottom: 15px;
+        border-bottom: 1px solid rgba(247, 94, 94, 0.3);
+        padding-bottom: 5px;
     }
 
     .menu-item {
-      background: #f9f9f9;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
+        text-align: center;
+        margin-bottom: 20px;
     }
 
     .menu-item img {
-      max-width: 100%;
-      border-radius: 20px;
-      margin-bottom: 5px;
-    }
-    .menu-item img {
-      max-width: 100%;
-      border-radius: 6px;
-     margin-bottom: 5px;
-     transition: transform 0.3s ease;  
-     }
-
-   .menu-item img:hover {
-     transform: scale(0.90);  
+        width: 100%;
+        max-width: 150px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 10px;
     }
 
-    .button {
-      display: block;
-      width: fit-content;
-      margin: 30px auto 0;
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      text-align: center;
+    .menu-item h3 {
+        font-size: 16px;
+        margin: 5px 0;
     }
 
-    .button:hover {
-      background: #0056b3;
+    .price {
+        color: #b0ffb0;
+        font-weight: bold;
     }
-  </style>
-</head>
-<body>
 
-  <h1>Cafeteria Menu</h1>
+    .menu-item button {
+        background-color: #3498db;
+        color: rgb(255, 255, 255);
+        border: none;
+        padding: 0px 0px;
+        border-radius: 6px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
 
-  <div class="menu-grid">
-    {% for category, items in menu_by_category.items %}
-      <div class="category-column">
-        <h2>{{ category.name }}</h2>
-        {% for item in items %}
-          <div class="menu-item">
-            {% if item.image %}
-              <img src="{{ item.image.url }}" alt="{{ item.name }}">
-            {% endif %}
-            <strong>{{ item.name }}</strong> - {{ item.price }} EGP<br>
-            <small>{{ item.description }}</small>
-          </div>
-        {% endfor %}
-      </div>
-    {% endfor %}
-  </div>
+    .menu-item button:hover {
+        background-color: #2980b9;
+        transform: scale(0.95);
+        transition: background-color 0.3s ease;
 
-  <a href="{% url 'place_order' %}" class="button">Place an Order</a>
+    }
 
-</body>
-</html>
+
+    .bt1{
+        padding: 10px 25px;
+        width: 510px; 
+        font-size: 16px; 
+        border-radius: 8px; 
+        background-color: #27ae60; 
+        color: white; 
+        border: none;
+    }
+
+    .bt1:hover{
+        transform: scale(0.95);
+        transition: background-color 0.3s ease;
+        background-color: #219150;
+
+    }
+    .bt{
+        padding: 8px 15px;
+        width: 250px; 
+        border-radius: 6px; 
+        background-color: #2980b9; 
+        color: white; 
+        border: none; 
+        margin-left: 10px;
+    }
+    .bt:hover {
+        background-color: #216795;
+        transform: scale(0.95);
+        transition: background-color 0.3s ease;
+
+    }
+
+    .description {
+        font-size: 14px;
+        color: #eee;
+        margin-top: 8px;
+    }
+
+    .menu-buttons {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .menu-buttons button {
+        padding: 10px 25px;
+        font-size: 16px;
+        border-radius: 8px;
+        background-color: #27ae60;
+        color: white;
+        border: none;
+        margin: 0 10px;
+    }
+
+    .menu-buttons .blue {
+        background-color: #2980b9;
+    }
+
+    .back-link-btn {
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.back-link-btn:hover {
+    background-color: #0056b3;
+    transform: scale(0.95);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleDescription(itemId) {
+    const desc = document.getElementById(`desc-${itemId}`);
+    desc.style.display = desc.style.display === "none" ? "block" : "none";
+}
+function goToOrder() {
+    const orderId = document.getElementById("orderIdInput").value;
+    if (orderId) {
+        window.location.href = `/order/${orderId}/`;
+    }
+    return false;
+}
+    async function handleAddToOrder() {
+        const orderId = document.getElementById("addOrderId").value;
+
+        const response = await fetch(`/order/${orderId}/check-time/`);
+        const result = await response.json();
+
+        if (result.allowed) {
+            window.location.href = `/order/${orderId}/add/`;
+        } else {
+            document.getElementById("tooLateMsg").style.display = "block";
+        }
+
+        return false; 
+    }
+</script>
+{% endblock %}

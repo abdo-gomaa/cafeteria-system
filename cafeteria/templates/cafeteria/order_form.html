@@ -1,63 +1,270 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Place Order</title>
-    <style>
-        .order-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-    </style>
-    <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f2f2f2; }
-    h1 { color: #333; }
-    form { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .order-item { border: 1px dashed #aaa; padding: 10px; margin-bottom: 10px; border-radius: 4px; background: #fafafa; }
-    button { margin-top: 10px; padding: 8px 16px; border: none; background: #28a745; color: white; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #218838; }
-    .add-button { background: #007bff; margin-bottom: 10px; }
-    .add-button:hover { background: #0056b3; }
-  </style>
-</head>
-<body>
-    <h1>Place an Order</h1>
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    body {
+        background: url("{% static 'images/restaurant.jpg' %}") no-repeat center center fixed;
+        background-size: cover;
+        backdrop-filter: blur(6px);
+        padding: 30px;
+    }
+    .overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            padding: 20px;            
+            width: 800px;
+            margin: auto;
+            border-radius: 8px;}
+            
+    .form-container {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        max-width: 800px;
+        margin: auto;
+        border-radius: 15px;
+    }
 
-    <form method="post" id="order-form">
+    .form-row {
+        margin-bottom: 20px;
+    }
+
+    .order-item-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+
+    .order-item-row select,
+    .order-item-row input[type="number"] {
+        flex: 1;
+    }
+
+    #order-items {
+        margin-top: 20px;
+    }
+
+    .total-price {
+        font-weight: bold;
+        font-size: 20px;
+        text-align: right;
+        margin-top: 20px;
+    }
+    .bt1:hover{
+        transform: scale(0.95);
+
+    }
+        .info-button-container {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    z-index: 100;
+}
+
+.info-button {
+    background-color: #3498db;
+    color: white;
+    
+    border-radius: 20px;
+    width: 100px;
+    height: 55px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+}
+
+.info-button:hover {
+    background-color: #2980b9;
+    opacity: 40%;
+}
+
+.info-card {
+    display: none;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    background-color: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 15px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    opacity: 80%;
+}
+
+.info-button-container:hover .info-card {
+    display: block;
+}
+  h2{
+    color: #165e8e;
+  }
+  h3{
+    color: rgb(0, 0, 0);
+  }
+.menu-grid-wrapper {
+    padding: 0 30px;
+    margin-bottom: 0px;
+}
+    #bt2{
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    border-radius: 8px; 
+    font-size: 16px;
+    padding: 10px 25px;
+    }
+
+    #bt2:hover{
+    background-color: #0056b3;
+    transform: scale(0.95);
+    }
+</style>
+<div class="info-button-container">
+    <button class="info-button">About US</button>
+    <div class="info-card">
+        <h4>💠Cafeteria Info</h4>
+        <p><strong>Phone:</strong> 01061292646</p>
+        <p><strong>Phone:</strong> 01005687448</p>
+        <p><strong>Address:</strong> شارع عبد السلام عارف أمام مطعم مكدونالدز</p>
+        <p><strong>Hours:</strong> 10 AM – 12 PM (Sat–Thu)</p>
+    </div>
+</div>
+<div class="form-container">
+    <h2 style="text-align: center;">Place Your Order</h2>
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-        {{ formset.management_form }}
 
-        <div id="formset-container">
-            {% for form in formset %}
-                <div class="order-item">
-                    {{ form.as_p }}
-                </div>
-            {% endfor %}
+        <div class="form-row">
+            <label>Your Name</label>
+            {{ form.customer_name }}
         </div>
 
-        <button type="button" onclick="addForm()">Add Another Item</button>
-        <br><br>
-        <button type="submit">Submit Order</button>
+        <div class="form-row">
+            <label>Phone Number</label>
+            {{ form.phone_number }}
+        </div>
+
+        <div class="form-row">
+            <label>Address</label>
+            {{ form.address }}
+        </div>
+
+        <div id="order-items">
+            <label>Your Order</label>
+            <div class="order-item-row">
+                <select name="item" class="item-select">
+    <option value="Cash On Delivery">Select Your Order</option>
+
+                    {% for item in menu_items %}
+                        <option value="{{ item.id }}" data-price="{{ item.price }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" class="item-qty" name="quantity" value="1" min="1">
+            </div>
+        </div>
+
+        <button class="bt1" type="button" onclick="addItem()">Add Another Item</button>
+
+        <div class="total-price" id="total-price">Total: 0.00 EGP</div>
+        <div class="total-price" id="delivery-charge">Delivery: 15.00 EGP</div>
+        <div class="total-price" id="grand-total">Grand Total: 15.00 EGP</div>
+
+
+        <label>Payment Method:</label>
+<select name="payment_method" id="payment_method" onchange="toggleCardFields()">
+    <option value="">Select Method</option>
+    <option value="Cash On Delivery">Cash On Delivery</option>
+    <option value="takeaway">Take Away</option>
+    <option value="visa">Visa</option>
+</select>
+
+
+<div id="card_fields" style="display: none; margin-top: 15px;">
+    <label>Card Number:</label>
+    <input type="text" name="card_number" maxlength="16">
+
+    <label>Cardholder Name:</label>
+    <input type="text" name="card_name">
+
+    <label>Expiry Date (MM/YY):</label>
+    <input type="text" name="expiry_date" maxlength="5">
+
+    <label>CVV:</label>
+    <input type="text" name="cvv" maxlength="4">
+</div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="bt1" type="submit">Submit Order</button>
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+        <a  href="{% url 'menu' %}" style="text-decoration: none;">
+        <button id="bt2">
+            Back to Menu
+        </button>
+    </a>
+</div>
     </form>
+</div>
 
-    <script>
-        let formIdx = parseInt("{{ formset.total_form_count }}");
 
-        function addForm() {
-            let container = document.getElementById('formset-container');
-            let emptyFormHtml = `{{ formset.empty_form.as_p|escapejs }}`;
-            let newFormHtml = emptyFormHtml.replace(/__prefix__/g, formIdx);
-            let newDiv = document.createElement('div');
-            newDiv.classList.add('order-item');
-            newDiv.innerHTML = newFormHtml;
-            container.appendChild(newDiv);
-            formIdx++;
 
-            // Update TOTAL_FORMS hidden input
-            document.getElementById('id_' + '{{ formset.prefix }}-TOTAL_FORMS').value = formIdx;
+<script>
+    function calculateTotal() {
+    let total = 0;
+    const rows = document.querySelectorAll('.order-item-row');
+    rows.forEach(row => {
+        const select = row.querySelector('.item-select');
+        const qty = row.querySelector('.item-qty').value;
+        const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
+        if (!isNaN(price)) {
+            total += price * qty;
         }
-    </script>
-</body>
-</html>
+    });
+
+    const delivery = 15.00;
+    const grandTotal = total + delivery;
+
+    document.getElementById('total-price').innerText = `Total: ${total.toFixed(2)} EGP`;
+    document.getElementById('delivery-charge').innerText = `Delivery: ${delivery.toFixed(2)} EGP`;
+    document.getElementById('grand-total').innerText = `Grand Total: ${grandTotal.toFixed(2)} EGP`;
+}
+    function addItem() {
+        const orderItemsDiv = document.getElementById('order-items');
+        const firstRow = orderItemsDiv.querySelector('.order-item-row');
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelector('.item-qty').value = 1;
+        newRow.querySelector('.item-select').selectedIndex = 0;
+
+        orderItemsDiv.appendChild(newRow);
+        bindEvents();
+        calculateTotal();
+    }
+
+    function bindEvents() {
+        const selects = document.querySelectorAll('.item-select');
+        const qtys = document.querySelectorAll('.item-qty');
+        selects.forEach(select => select.onchange = calculateTotal);
+        qtys.forEach(qty => qty.oninput = calculateTotal);
+    }
+    window.onload = () => {
+        bindEvents();
+        calculateTotal();
+    }
+   function toggleCardFields() {
+    const method = document.getElementById("payment_method").value;
+    const cardFields = document.getElementById("card_fields");
+
+    if (method === "visa") {
+        cardFields.style.display = "block";
+    } else {
+        cardFields.style.display = "none";
+    }
+}
+
+</script>
+
+{% endblock %}

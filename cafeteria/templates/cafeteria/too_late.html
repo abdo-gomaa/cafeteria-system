@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="text-align:center; margin-top: 50px;">
+    <h2 style="color: red;">{{ message }}</h2>
+    <a href="{% url 'order_detail' order.id %}">Back to Order</a>
+</div>
+{% endblock %}

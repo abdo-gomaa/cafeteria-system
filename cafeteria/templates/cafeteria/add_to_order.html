@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .form-container {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        max-width: 800px;
+        margin: auto;
+        border-radius: 15px;
+    }
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .order-item-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+    .order-item-row select,
+    .order-item-row input[type="number"] {
+        flex: 1;
+    }
+    .total-price {
+        font-weight: bold;
+        font-size: 20px;
+        text-align: right;
+        margin-top: 20px;
+    }
+    .bt1:hover {
+        transform: scale(0.95);
+    }
+    #bt2{
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    border-radius: 8px; 
+    font-size: 16px;
+    padding: 10px 25px;
+    }
+
+    #bt2:hover{
+    background-color: #0056b3;
+    transform: scale(0.95);
+    }
+</style>
+<br>
+<div class="form-container">
+    <h2 style="text-align: center;">Add to Order #{{ order.id }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div id="order-items">
+            <div class="order-item-row">
+                <select name="item" class="item-select">
+                    <option>Select Item</option>
+                    {% for item in menu_items %}
+                        <option value="{{ item.id }}" data-price="{{ item.price }}">{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="quantity" class="item-qty" value="1" min="1">
+            </div>
+        </div>
+
+        <button class="bt1" type="button" onclick="addItem()">Add Another Item</button>
+
+        <div class="total-price" id="total-price">Total: 0.00 EGP</div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="bt1" type="submit">Add to Order</button>
+        </div>
+    </form>
+    <div style="text-align: center; margin-top: 30px;">
+    <a  href="{% url 'menu' %}" style="text-decoration: none;">
+        <button id="bt2">
+            Back to Menu
+        </button>
+    </a>
+</div>
+
+</div><br>
+
+
+
+<script>
+    function calculateTotal() {
+        let total = 0;
+        const rows = document.querySelectorAll('.order-item-row');
+        rows.forEach(row => {
+            const select = row.querySelector('.item-select');
+            const qty = parseFloat(row.querySelector('.item-qty').value);
+            const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
+
+            if (!isNaN(price) && !isNaN(qty)) {
+                total += price * qty;
+            }
+        });
+
+        document.getElementById('total-price').innerText = `Total: ${total.toFixed(2)} EGP`;
+    }
+
+    function addItem() {
+        const orderItemsDiv = document.getElementById('order-items');
+        const firstRow = orderItemsDiv.querySelector('.order-item-row');
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelector('.item-qty').value = 1;
+        newRow.querySelector('.item-select').selectedIndex = 0;
+
+        orderItemsDiv.appendChild(newRow);
+        bindEvents();
+        calculateTotal();
+    }
+
+    function bindEvents() {
+        const selects = document.querySelectorAll('.item-select');
+        const qtys = document.querySelectorAll('.item-qty');
+        selects.forEach(select => select.onchange = calculateTotal);
+        qtys.forEach(qty => qty.oninput = calculateTotal);
+    }
+
+    window.onload = () => {
+        bindEvents();
+        calculateTotal();
+    }
+</script>
+{% endblock %}

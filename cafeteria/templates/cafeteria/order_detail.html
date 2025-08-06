@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Order Details{% endblock %}
+{% block content %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    body {
+        background: url('{% static "images/restaurant_blur.jpg" %}') no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+    }
+    .order-detail-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 40px;
+        margin: 50px auto;
+        width: 650PX;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    .order-detail-container h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 28px;
+    }
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #ccc;
+    }
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    .order-summary {
+        text-align: right;
+        margin-top: 30px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 30px;
+    }
+    .back-link a {
+        text-decoration: none;
+        color: #fff;
+        background-color: #007bff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    .back-link a:hover {
+        background-color: #0056b3;
+    }
+    #bt2:hover{
+        transform: scale(0.95);
+    }
+        .overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;           
+            height: 100%; 
+            width: 800px;
+            margin: auto;
+            border-radius: 8px;}
+
+.back-link-btn,
+.add-order-btn {
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    background-color: #007bff;
+    padding: 10px 75px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+}
+
+.back-link-btn:hover,
+.add-order-btn:hover {
+    background-color: #0056b3;
+    transform: scale(0.95);
+}
+
+</style>
+</head>
+<body>
+
+<div class="order-detail-container">
+    <h2>Order #{{ order.id }} - {{ order.customer_name }}</h2>
+    <p><strong>Phone:</strong> {{ order.phone_number }}</p>
+    <p><strong>Address:</strong> {{ order.address }}</p>
+    <p><strong>Status:</strong> {{ order.status }}</p>
+    <p><strong>Orderd At:</strong> {{ order.created_at|date:"Y/m/d " }}  ({{ order.created_at|date:"H:i:s" }})</p>
+    <p><strong>Expected Arrival In:</strong> (20 ~ 40) Minutes</p>
+    <p><strong>Payment Method:</strong> {{ order.payment_method|title }}</p>
+
+    {% if order.payment_method == 'visa' %}
+    <p><strong>Card Number:</strong> **** **** **** {{ order.card_number|slice:"-4:" }}</p>
+    <p><strong>Cardholder:</strong> {{ order.card_name }}</p>
+    <p><strong>Expiry:</strong> {{ order.expiry_date }}</p>
+{% endif %}
+
+    <h3>Items:</h3>
+    {% for item in order.items.all %}
+        <div class="order-item">
+            <span>{{ item.item.name }} (x{{ item.quantity }})</span>
+            <span>{{ item.total_price }} EGP</span>
+        </div>
+        
+    {% endfor %}
+
+    <div class="order-summary">
+        Total: {{ order.total_price }} EGP
+    </div>
+<div class="order-summary">
+    Delivery: 15.00 EGP
+</div>
+<div class="order-summary">
+    Grand Total: {{ order.total_price|add:15.00 }} EGP
+
+
+<div class="button-row" style="display: flex; justify-content: space-between; margin-top: 30px;">
+
+    <div>
+        <a href="{% url 'menu' %}" class="back-link-btn">Back to Menu</a>
+    </div>
+
+    <div>
+        <a href="{% url 'add_to_order' order.id %}" class="add-order-btn">Add to Order</a>
+    </div>
+
+</div>
+
+{% if error_message %}
+    <p style="color:red; text-align:center; margin-top: 15px;">{{ error_message }}</p>
+{% endif %}
+
+
+
+    {% endblock %}
+</div>
+</body>
+</html>
